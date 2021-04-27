@@ -1,17 +1,16 @@
 /* Exteranl dependencies */
-import React from 'react'
+import React, { useRef } from 'react'
 import {
   useDrag,
   useDrop,
   useDragLayer,
-  ConnectDragSource,
-  ConnectDropTarget,
+  DropTargetMonitor,
+  XYCoord,
 } from 'react-dnd'
 import _ from 'lodash'
 
 interface ChildrenProps {
-  drag: ConnectDragSource
-  drop: ConnectDropTarget
+  itemRef: React.RefObject<HTMLDivElement>
   isDragging: boolean
   isDraggingGlobal: boolean
 }
@@ -19,9 +18,14 @@ interface ChildrenProps {
 interface DragAndDropItemProps {
   type: string
   index?: number
-  children: ({ drag, drop, isDragging, isDraggingGlobal }: ChildrenProps) => React.ReactElement
-  onHover?: (hoverdIndex: number) => void
+  children: ({ itemRef, isDragging, isDraggingGlobal }: ChildrenProps) => React.ReactElement
+  onHover?: (item: DragItem, hoverIndex: number, itemElement: HTMLDivElement, clientOffset: XYCoord) => void
   onDrop?: () => void
+}
+
+export interface DragItem {
+  index: number
+  type: string
 }
 
 function DragAndDropItem({
@@ -31,6 +35,8 @@ function DragAndDropItem({
   onHover = _.noop,
   onDrop = _.noop,
 }: DragAndDropItemProps) {
+  const itemRef = useRef<HTMLDivElement>(null)
+
   const { isDragging: isDraggingGlobal } = useDragLayer((monitor) => ({
     isDragging: monitor.isDragging(),
   }))
@@ -39,7 +45,7 @@ function DragAndDropItem({
     type,
     item: { index },
     collect: monitor => ({
-      isDragging: !!monitor.isDragging(),
+      isDragging: monitor.isDragging(),
     }),
     end: () => {
       onDrop()
@@ -52,8 +58,14 @@ function DragAndDropItem({
 
   const [, drop] = useDrop(() => ({
     accept: type,
-    hover: () => {
-      onHover(index)
+    hover: (item: DragItem, monitor: DropTargetMonitor) => {
+      const clientOffset = monitor.getClientOffset()
+
+      if (!itemRef.current || !clientOffset) {
+        return
+      }
+
+      onHover(item, index, itemRef.current, clientOffset)
     },
   }), [
     type,
@@ -61,7 +73,9 @@ function DragAndDropItem({
     onHover,
   ])
 
-  return children({ drag, drop, isDragging, isDraggingGlobal })
+  drag(drop(itemRef))
+
+  return children({ itemRef, isDragging, isDraggingGlobal })
 }
 
 export default DragAndDropItem

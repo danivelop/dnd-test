@@ -1,59 +1,51 @@
 /* Exteranl dependencies */
-import React, { useState, useMemo, useCallback, useRef } from 'react'
-import { DndProvider } from 'react-dnd'
+import React, { useState, useMemo, useCallback } from 'react'
+import { DndProvider, XYCoord } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { FlattenSimpleInterpolation } from 'styled-components'
 import _ from 'lodash'
 
 /* Interanl dependencies */
+import { DragItem } from './DragAndDropItem'
 import { Wrapper } from './DragAndDropList.styled'
 
 interface DragAndDropListProps<T> {
   className?: string
   interpolation?: FlattenSimpleInterpolation
   list: T[]
-  component: (...args: any[]) => React.ReactElement | React.ReactElement
+  component: (...args: any[]) => React.ReactElement
 }
 
-type ThrottleHandlerType<T = any> = (hoverdIndex: number, list: T[]) => T[] | void
+const throttleHover = _.throttle((item, hoverIndex, itemElement, clientOffset, list, setList) => {
+  const { index: dragIndex } = item
 
-let globalOriginIndex = 0
-
-const throttleHover = _.throttle((hoverdIndex, list) => {
-  if (globalOriginIndex === hoverdIndex) {
-    return null
+  if (dragIndex === hoverIndex) {
+    return
   }
 
-  const isMovingBottom = globalOriginIndex < hoverdIndex
+  const hoverBoundingRect = itemElement.getBoundingClientRect()
 
-  const preIndex = isMovingBottom ? globalOriginIndex : hoverdIndex
-  const postIndex = isMovingBottom ? hoverdIndex : globalOriginIndex
+  const hoverMiddleY =
+    (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2
 
-  const middleList = (() => {
-    const middle = list.slice(preIndex, postIndex + 1)
+  const hoverClientY = clientOffset.y - hoverBoundingRect.top
+  if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
+    return
+  }
 
-    if (_.isEmpty(middle)) {
-      return []
-    }
-    
-    if (isMovingBottom) {
-      middle.push(middle.shift()!)
-    } else {
-      middle.unshift(middle.pop()!)
-    }
+  if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
+    return
+  }
 
-    globalOriginIndex = hoverdIndex
+  const dragItem = list[dragIndex]
+  const newList = [...list]
+  newList.splice(dragIndex, 1)
+  newList.splice(hoverIndex, 0, dragItem)
 
-    return middle
-  })()
-
-  const newList = [
-    ...list.slice(0, preIndex),
-    ...middleList,
-    ...list.slice(postIndex + 1),
-  ]
-
-  return newList
+  if (newList) {
+    setList(newList)
+    item.index = hoverIndex
+  }
 }, 50)
 
 function DragAndDropList<T = any>({
@@ -64,24 +56,11 @@ function DragAndDropList<T = any>({
 }: DragAndDropListProps<T>) {
   const [list, setList] = useState<T[]>(receivedList)
 
-  const isDraggingRef = useRef(false)
-
-  const handleHover = useCallback((hoverdIndex: number) => {
-    if (!isDraggingRef.current) {
-      globalOriginIndex = hoverdIndex
-      isDraggingRef.current = true
-    }
-
-    const newList = throttleHover(hoverdIndex, list)
-
-    if (newList) {
-      setList(newList)
-    }
+  const handleHover = useCallback((item: DragItem, hoverIndex: number, itemElement: HTMLDivElement, clientOffset: XYCoord) => {
+    throttleHover(item, hoverIndex, itemElement, clientOffset, list, setList)
   }, [list])
 
-  const handleDrop = useCallback(() => {
-    isDraggingRef.current = false
-  }, [])
+  const handleDrop = useCallback(() => {}, [])
 
   const ListComponent = useMemo(() => (
     list.map((item, index) => (

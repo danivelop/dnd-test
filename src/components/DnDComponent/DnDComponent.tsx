@@ -21,26 +21,26 @@ const MOCK_DATA = [
   },
   {
     id: 2,
-    title: 'title1',
-    content: 'content1',
+    title: 'title2',
+    content: 'content2',
     order: 2000,
   },
   {
     id: 3,
-    title: 'title1',
-    content: 'content1',
+    title: 'title3',
+    content: 'content3',
     order: 3000,
   },
   {
     id: 4,
-    title: 'title1',
-    content: 'content1',
+    title: 'title4',
+    content: 'content4',
     order: 4000,
   },
   {
     id: 5,
-    title: 'title1',
-    content: 'content1',
+    title: 'title5',
+    content: 'content5',
     order: 5000,
   },
 ]
@@ -48,9 +48,9 @@ const MOCK_DATA = [
 function DnDComponent() {
   const ListComponent = useCallback((item: ItemProps) => (
     <DragAndDropItem type="something" key={item.id}>
-      { ({ drag, drop, isDragging }) => (
+      { ({ itemRef, isDragging, isDraggingGlobal }) => (
         <Styled.Wrapper
-          ref={(ref) => drag(drop(ref))}
+          ref={itemRef}
           isDragging={isDragging}
         >
           <Styled.Text>{item.id}</Styled.Text>
