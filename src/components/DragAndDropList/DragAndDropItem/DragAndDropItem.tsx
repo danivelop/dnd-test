@@ -1,5 +1,5 @@
 /* Exteranl dependencies */
-import React, { useRef } from 'react'
+import React, { useRef, memo } from 'react'
 import {
   useDrag,
   useDrop,
@@ -21,12 +21,11 @@ interface DragAndDropItemProps {
   index?: number
   children: ({ itemRef, isDragging, isDraggingGlobal }: ChildrenProps) => React.ReactElement
   onHover?: (item: DragItem, hoverIndex: number, itemElement: HTMLDivElement, clientOffset: XYCoord) => void
-  onDrop?: () => void
+  onDrop?: (item: DragItem) => void
 }
 
 export interface DragItem {
   index: number
-  type: string
 }
 
 function DragAndDropItem({
@@ -48,8 +47,8 @@ function DragAndDropItem({
     collect: (monitor: DragSourceMonitor) => ({
       isDragging: monitor.isDragging(),
     }),
-    end: () => {
-      onDrop()
+    end: (item) => {
+      onDrop(item)
     },
   }), [
     type,
@@ -79,4 +78,4 @@ function DragAndDropItem({
   return children({ itemRef, isDragging, isDraggingGlobal })
 }
 
-export default DragAndDropItem
+export default memo(DragAndDropItem)

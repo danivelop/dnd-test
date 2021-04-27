@@ -46,6 +46,13 @@ const MOCK_DATA = [
 ]
 
 function DnDComponent() {
+  const handleDrop = useCallback(({ dragItem, dragIndex, prevItem, nextItem}) => {
+    console.log('dragItem', dragItem)
+    console.log('dragIndex', dragIndex)
+    console.log('prevItem', prevItem)
+    console.log('nextItem', nextItem)
+  }, [])
+
   const ListComponent = useCallback((item: ItemProps) => (
     <DragAndDropItem type="something" key={item.id}>
       { ({ itemRef, isDragging, isDraggingGlobal }) => (
@@ -66,6 +73,7 @@ function DnDComponent() {
       interpolation={Styled.DragAndDropListStyle}
       list={MOCK_DATA}
       component={ListComponent}
+      onDrop={handleDrop}
     />
   )
 }

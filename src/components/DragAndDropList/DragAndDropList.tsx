@@ -10,11 +10,19 @@ import _ from 'lodash'
 import { DragItem } from './DragAndDropItem'
 import { Wrapper } from './DragAndDropList.styled'
 
+interface OnDropProps<T> {
+  dragItem: T
+  dragIndex: number
+  prevItem?: T
+  nextItem?: T
+}
+
 interface DragAndDropListProps<T> {
   className?: string
   interpolation?: FlattenSimpleInterpolation
   list: T[] | Immutable.List<T>
   component: (item: T) => React.ReactElement
+  onDrop?: ({ dragItem, dragIndex }: OnDropProps<T>) => void
 }
 
 const throttleHover = _.throttle((item, hoverIndex, itemElement, clientOffset, list, setList) => {
@@ -54,6 +62,7 @@ function DragAndDropList<T = any>({
   interpolation,
   list: receivedList,
   component,
+  onDrop = _.noop,
 }: DragAndDropListProps<T>) {
   const [list, setList] = useState<T[]>(isImmutable(receivedList) ? receivedList.toArray() : receivedList)
 
@@ -61,7 +70,19 @@ function DragAndDropList<T = any>({
     throttleHover(item, hoverIndex, itemElement, clientOffset, list, setList)
   }, [list])
 
-  const handleDrop = useCallback(() => {}, [])
+  const handleDrop = useCallback((item: DragItem) => {
+    const { index: dragIndex } = item
+
+    onDrop({
+      dragItem: list[dragIndex],
+      dragIndex,
+      prevItem: list[dragIndex - 1],
+      nextItem: list[dragIndex + 1],
+    })
+  }, [
+    list,
+    onDrop,
+  ])
 
   const ListComponent = useMemo(() => (
     list.map((item: T, index: number) => (
