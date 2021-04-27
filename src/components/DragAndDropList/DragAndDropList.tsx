@@ -2,6 +2,7 @@
 import React, { useState, useMemo, useCallback } from 'react'
 import { DndProvider, XYCoord } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
+import Immutable, { isImmutable } from 'immutable'
 import { FlattenSimpleInterpolation } from 'styled-components'
 import _ from 'lodash'
 
@@ -12,8 +13,8 @@ import { Wrapper } from './DragAndDropList.styled'
 interface DragAndDropListProps<T> {
   className?: string
   interpolation?: FlattenSimpleInterpolation
-  list: T[]
-  component: (...args: any[]) => React.ReactElement
+  list: T[] | Immutable.List<T>
+  component: (item: T) => React.ReactElement
 }
 
 const throttleHover = _.throttle((item, hoverIndex, itemElement, clientOffset, list, setList) => {
@@ -54,7 +55,7 @@ function DragAndDropList<T = any>({
   list: receivedList,
   component,
 }: DragAndDropListProps<T>) {
-  const [list, setList] = useState<T[]>(receivedList)
+  const [list, setList] = useState<T[]>(isImmutable(receivedList) ? receivedList.toArray() : receivedList)
 
   const handleHover = useCallback((item: DragItem, hoverIndex: number, itemElement: HTMLDivElement, clientOffset: XYCoord) => {
     throttleHover(item, hoverIndex, itemElement, clientOffset, list, setList)
@@ -63,7 +64,7 @@ function DragAndDropList<T = any>({
   const handleDrop = useCallback(() => {}, [])
 
   const ListComponent = useMemo(() => (
-    list.map((item, index) => (
+    list.map((item: T, index: number) => (
       React.cloneElement(component(item), {
         index,
         onHover: handleHover,

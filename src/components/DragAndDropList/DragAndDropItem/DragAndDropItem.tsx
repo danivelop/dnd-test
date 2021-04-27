@@ -4,6 +4,7 @@ import {
   useDrag,
   useDrop,
   useDragLayer,
+  DragSourceMonitor,
   DropTargetMonitor,
   XYCoord,
 } from 'react-dnd'
@@ -44,7 +45,7 @@ function DragAndDropItem({
   const [{ isDragging }, drag] = useDrag(() => ({
     type,
     item: { index },
-    collect: monitor => ({
+    collect: (monitor: DragSourceMonitor) => ({
       isDragging: monitor.isDragging(),
     }),
     end: () => {
