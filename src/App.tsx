@@ -1,26 +1,26 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+// import React, { useState, useEffect } from 'react'
+// import Board from 'components/Board'
+// import { observe } from 'components/Game'
+
+// function App() {
+//   const [position, setPosition] = useState([0, 0])
+
+//   useEffect(() => {
+//     observe(setPosition)
+//   }, [])
+
+//   return (
+//     <Board knightPosition={position} />
+//   )
+// }
+
+// export default App
+
+import React from 'react'
+import DnDComponent from 'components/DnDComponent'
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+  return <DnDComponent />
 }
 
-export default App;
+export default App
