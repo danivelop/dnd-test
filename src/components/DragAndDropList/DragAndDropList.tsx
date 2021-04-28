@@ -127,13 +127,13 @@ function DragAndDropList<T = any>({
 
   useEffect(() => {
     const monitor = dragdropManager.getMonitor()
+    const newList = [...isImmutable(receivedList) ? receivedList.toArray() : receivedList]
 
     if (!monitor.isDragging()) {
-      setList(isImmutable(receivedList) ? receivedList.toArray() : receivedList)
+      setList(newList)
       return
     }
 
-    const newList = [...isImmutable(receivedList) ? receivedList.toArray() : receivedList]
     const dragItem = list[hoverIndexRef.current]
     const dragIndex = newList.findIndex(item => dragItem === item)
 
@@ -142,6 +142,9 @@ function DragAndDropList<T = any>({
       newList.splice(dragIndex, 1)
       newList.splice(hoverIndexRef.current, 0, newItem)
 
+      setList(newList)
+    } else {
+      dragdropManager.getActions().endDrag()
       setList(newList)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
