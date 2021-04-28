@@ -1,5 +1,5 @@
 /* Exteranl dependencies */
-import React, { useCallback } from 'react'
+import React, { useCallback, useState, useEffect } from 'react'
 
 /* Interanl dependencies */
 import DragAndDropList, { DragAndDropItem } from 'components/DragAndDropList'
@@ -46,6 +46,8 @@ const MOCK_DATA = [
 ]
 
 function DnDComponent() {
+  const [list, setList] = useState<ItemProps[]>(MOCK_DATA)
+
   const handleDrop = useCallback(({ dragItem, dragIndex, prevItem, nextItem}) => {
     console.log('dragItem', dragItem)
     console.log('dragIndex', dragIndex)
@@ -68,10 +70,21 @@ function DnDComponent() {
     </DragAndDropItem>
   ), [])
 
+  useEffect(() => {
+    setTimeout(() => {
+      const dragItem = list[1]
+      const newList = [...list]
+      newList.splice(1, 1)
+      newList.splice(3, 0, dragItem)
+
+      setList(newList)
+    }, 3000)
+  }, [])
+
   return (
     <DragAndDropList<ItemProps>
       interpolation={Styled.DragAndDropListStyle}
-      list={MOCK_DATA}
+      list={list}
       component={ListComponent}
       onDrop={handleDrop}
     />

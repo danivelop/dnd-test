@@ -1,7 +1,6 @@
 /* Exteranl dependencies */
-import React, { useState, useMemo, useCallback, useEffect } from 'react'
-import { DndProvider, XYCoord } from 'react-dnd'
-import { HTML5Backend } from 'react-dnd-html5-backend'
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
+import { XYCoord, useDragDropManager } from 'react-dnd'
 import Immutable, { isImmutable } from 'immutable'
 import { FlattenSimpleInterpolation } from 'styled-components'
 import _ from 'lodash'
@@ -88,7 +87,12 @@ function DragAndDropList<T = any>({
 }: DragAndDropListProps<T>) {
   const [list, setList] = useState<T[]>(isImmutable(receivedList) ? receivedList.toArray() : receivedList)
 
+  const hoverIndexRef = useRef<number>(0)
+
+  const dragdropManager = useDragDropManager()
+
   const handleHover = useCallback((item: DragItem, hoverIndex: number, itemElement: HTMLDivElement, clientOffset: XYCoord) => {
+    hoverIndexRef.current = hoverIndex
     throttleHover(item, hoverIndex, itemElement, clientOffset, list, setList)
   }, [list])
 
@@ -122,23 +126,34 @@ function DragAndDropList<T = any>({
   ])
 
   useEffect(() => {
-    if (_.isEmpty(list)) {
+    const monitor = dragdropManager.getMonitor()
+
+    if (!monitor.isDragging()) {
       setList(isImmutable(receivedList) ? receivedList.toArray() : receivedList)
+      return
     }
-  }, [
-    list,
-    receivedList,
-  ])
+
+    const newList = [...isImmutable(receivedList) ? receivedList.toArray() : receivedList]
+    const dragItem = list[hoverIndexRef.current]
+    const dragIndex = newList.findIndex(item => dragItem === item)
+
+    if (dragIndex !== -1) {
+      const newItem = newList[dragIndex]
+      newList.splice(dragIndex, 1)
+      newList.splice(hoverIndexRef.current, 0, newItem)
+
+      setList(newList)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [receivedList])
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <Wrapper
-        className={className}
-        interpolation={interpolation}
-      >
-        { ListComponent }
-      </Wrapper>
-    </DndProvider>
+    <Wrapper
+      className={className}
+      interpolation={interpolation}
+    >
+      { ListComponent }
+    </Wrapper>
   )
 }
 

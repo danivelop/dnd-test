@@ -17,10 +17,16 @@
 // export default App
 
 import React from 'react'
+import { DndProvider } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
 import DnDComponent from 'components/DnDComponent'
 
 function App() {
-  return <DnDComponent />
+  return (
+    <DndProvider backend={HTML5Backend}>
+      <DnDComponent />
+    </DndProvider>
+  )
 }
 
 export default App
