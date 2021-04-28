@@ -25,6 +25,15 @@ interface DragAndDropListProps<T> {
   onDrop?: (args: OnDropProps<T>) => void
 }
 
+function shiftArray(list: any[], removeIndex: number, addIndex: number) {
+  const dragItem = list[removeIndex]
+  const newList = [...list]
+  newList.splice(removeIndex, 1)
+  newList.splice(addIndex, 0, dragItem)
+
+  return newList
+}
+
 const throttleHover = _.throttle((item, hoverIndex, itemElement, clientOffset, list, setList) => {
   const { index: dragIndex } = item
 
@@ -39,17 +48,30 @@ const throttleHover = _.throttle((item, hoverIndex, itemElement, clientOffset, l
 
   const hoverClientY = clientOffset.y - hoverBoundingRect.top
   if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
+    if (dragIndex < hoverIndex - 1) {
+      const newList = shiftArray(list, dragIndex, hoverIndex - 1)
+
+      if (newList) {
+        setList(newList)
+        item.index = hoverIndex - 1
+      }
+    }
     return
   }
 
   if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
+    if (dragIndex > hoverIndex + 1) {
+      const newList = shiftArray(list, dragIndex, hoverIndex + 1)
+
+      if (newList) {
+        setList(newList)
+        item.index = hoverIndex + 1
+      }
+    }
     return
   }
 
-  const dragItem = list[dragIndex]
-  const newList = [...list]
-  newList.splice(dragIndex, 1)
-  newList.splice(hoverIndex, 0, dragItem)
+  const newList = shiftArray(list, dragIndex, hoverIndex)
 
   if (newList) {
     setList(newList)
