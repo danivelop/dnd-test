@@ -19,7 +19,7 @@ interface ChildrenProps {
 interface DragAndDropItemProps {
   type: string
   index?: number
-  children: ({ itemRef, isDragging, isDraggingGlobal }: ChildrenProps) => React.ReactElement
+  children: (args: ChildrenProps) => React.ReactElement
   onHover?: (item: DragItem, hoverIndex: number, itemElement: HTMLDivElement, clientOffset: XYCoord) => void
   onDrop?: (item: DragItem) => void
 }

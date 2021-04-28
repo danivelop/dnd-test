@@ -1,5 +1,5 @@
 /* Exteranl dependencies */
-import React, { useState, useMemo, useCallback } from 'react'
+import React, { useState, useMemo, useCallback, useEffect } from 'react'
 import { DndProvider, XYCoord } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import Immutable, { isImmutable } from 'immutable'
@@ -22,7 +22,7 @@ interface DragAndDropListProps<T> {
   interpolation?: FlattenSimpleInterpolation
   list: T[] | Immutable.List<T>
   component: (item: T) => React.ReactElement
-  onDrop?: ({ dragItem, dragIndex }: OnDropProps<T>) => void
+  onDrop?: (args: OnDropProps<T>) => void
 }
 
 const throttleHover = _.throttle((item, hoverIndex, itemElement, clientOffset, list, setList) => {
@@ -97,6 +97,15 @@ function DragAndDropList<T = any>({
     handleDrop,
     handleHover,
     list,
+  ])
+
+  useEffect(() => {
+    if (_.isEmpty(list)) {
+      setList(isImmutable(receivedList) ? receivedList.toArray() : receivedList)
+    }
+  }, [
+    list,
+    receivedList,
   ])
 
   return (
